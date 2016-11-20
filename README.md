@@ -2,12 +2,14 @@ My starter develope template kit.
 Using SASS 7 to 1 compile method.
 Using GULP to LivePreview, compile and production import.
 
-Вся основная информация содержится в статье "Руководство по написанию разумного, поддерживаемого и масштабируемого Sass." https://sass-guidelin.es/ru/
+# SASS 7 - 1
+Use folders for componets and `@import` directive in main sass file to compile. 
+See ["Sass Guidelines"](https://sass-guidelin.es) tutorial fo reference (or [russian translation](https://sass-guidelin.es/ru/))
 
-## Directory structure - for reference
+
+## Directory structure example
 
 ```
-
 scss/
 |
 |– base/
@@ -53,6 +55,5 @@ scss/
 |   ...                  # Etc…
 |
 |
-`– main.scss             # Main Sass file
-
+– main.scss             # Main Sass file
 ```

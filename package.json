@@ -1,5 +1,5 @@
 {
-  "name": "maguwohost",
+  "name": "MyProjectName",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alekseyleonov/rindjana.git"
+    "url": "git+https://github.com/alekseyleonov/MyProjectName.git"
   },
   "author": "Alex Leonov",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/alekseyleonov/rindjana/issues"
+    "url": "https://github.com/alekseyleonov/MyProjectName/issues"
   },
-  "homepage": "https://github.com/alekseyleonov/rindjana#readme",
+  "homepage": "https://github.com/alekseyleonov/MyProjectName#readme",
   "devDependencies": {
     "browser-sync": "^2.17.0",
     "del": "^2.2.2",
