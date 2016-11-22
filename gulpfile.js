@@ -24,8 +24,8 @@ var gulp = require('gulp'),
         "mode": {
             "css": { // Создаем CSS-спрайт
                 "dest": "app",
-                "common": "icon", // Предпочтительная приставка для класса имени иконки
-                "sprite": "img/sprite.css.svg",
+                "common": "svg-icon", // Предпочтительная приставка для класса имени иконки
+                "sprite": "../img/sprite.css.svg",
                 "bust": false,
                 "render": { // CSS отключен, используем SASS для сборки
                     "scss": {
@@ -36,7 +36,7 @@ var gulp = require('gulp'),
             },
             "stack": { // Создаем stack-спрайт (http://simurai.com/blog/2012/04/02/svg-stacks)
                 "dest": "./app",
-                "sprite": "./img/sprite.stack.svg",
+                "sprite": "../img/sprite.stack.svg",
                 "bust": false,
                 "example": true
             }
