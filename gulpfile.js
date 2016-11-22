@@ -29,7 +29,7 @@ var gulp = require('gulp'),
                 "bust": false,
                 "render": { // CSS отключен, используем SASS для сборки
                     "scss": {
-                        "dest": "sass/utils/_svg-sprite.scss"
+                        "dest": "scss/utils/_svg-sprite.scss"
                     }
                 },
                 "example": true
@@ -54,7 +54,7 @@ gulp.task('svgsprite', function() {
 
 // Таск для рендеринга SASS
 gulp.task('sass', function () {
-    return gulp.src('./app/sass/**/*.scss')
+    return gulp.src('./app/scss/**/*.scss')
         .pipe(sourcemaps.init()) // Инициализируем sourcemaps
         .pipe(sass().on('error', sass.logError))
         .pipe(autoprefixer(['last 3 versions', '> 2%', 'ie >= 8'], { cascade: true }))
@@ -99,7 +99,7 @@ gulp.task('sprite', function () {
 
     // Pipe CSS stream through CSS optimizer and onto disk
     var cssStream = spriteData.css
-        .pipe(gulp.dest('./app/sass/utils'));
+        .pipe(gulp.dest('./app/scss/utils'));
 
     // Return a merged stream to handle both `end` events
     return merge(imgStream, cssStream);
@@ -115,7 +115,7 @@ gulp.task('watch', ['sass'], function () {
         notify: false // Отключаем уведомления
     });
 
-    gulp.watch('app/sass/**/*.scss', ['sass']);
+    gulp.watch('app/scss/**/*.scss', ['sass']);
     gulp.watch('./app/*.html').on('change', browserSync.reload); // Наблюдение за HTML файлами
     // gulp.watch('./app/js/**/*.js', browserSync.reload); // Наблюдение за JS файлами в папке js
     gulp.watch('./app/js/**/*.js').on('change', browserSync.reload);
