@@ -14,29 +14,30 @@ var gulp = require('gulp'),
     merge = require('merge-stream'),
 
     /* Следующий блок переменных задает параметры директорий для gulp-svg-sprite */
-    baseDir      = './app/img/icons-svg',   // <-- Set to your SVG base directory
+    baseDir      = 'app/img/icons-svg',   // <-- Set to your SVG base directory
     svgGlob      = '**/*.svg',       // <-- Glob to match your SVG files
-    outDir       = '.',     // <-- Main output directory
+    outDir       = 'app',     // <-- Main output directory
 
     /* Конфигурация для gulp-svg-sprite */
     config       = {
         "log": "verbose", // Смотрим лог куда какие файлы упали
         "mode": {
             "css": { // Создаем CSS-спрайт
-                "dest": "app",
+                "dest": ".",
                 "common": "svg-icon", // Предпочтительная приставка для класса имени иконки
-                "sprite": "../img/sprite.css.svg",
+                "sprite": "img/sprite.css.svg",
                 "bust": false,
                 "render": { // CSS отключен, используем SASS для сборки
                     "scss": {
+                        "template": "app/tmpl/gulp-svg-sprite.scss",
                         "dest": "scss/utils/_svg-sprite.scss"
                     }
                 },
                 "example": true
             },
             "stack": { // Создаем stack-спрайт (http://simurai.com/blog/2012/04/02/svg-stacks)
-                "dest": "./app",
-                "sprite": "../img/sprite.stack.svg",
+                "dest": ".",
+                "sprite": "img/sprite.stack.svg",
                 "bust": false,
                 "example": true
             }

@@ -2,6 +2,9 @@ My starter develope template kit.
 Using SASS 7 to 1 compile method.
 Using GULP to LivePreview, compile and production import.
 
+1. `npm i`
+2. `gulp watch`
+
 # SASS 7 - 1
 Use folders for componets and `@import` directive in main sass file to compile. 
 See ["Sass Guidelines"](https://sass-guidelin.es) tutorial fo reference (or [russian translation](https://sass-guidelin.es/ru/))
