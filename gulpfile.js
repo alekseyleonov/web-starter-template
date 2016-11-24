@@ -140,8 +140,14 @@ gulp.task('build', ['clean', 'csso'], function() {
         .pipe(gulp.dest('./dist/js'));
     var buildHtml = gulp.src('./app/*.html') // Переносим HTML в продакшен
         .pipe(gulp.dest('./dist'));
-    var buildImg = gulp.src('./app/img/*') // Переносим изображения в продакшен
+    /* Переносим все изображения КРОМЕ SVG-спрайтов в продакшен */
+    var buildImg = gulp.src(['./src/img/**', '!./src/img/sprite.css.svg', '!./src/img/sprite.stack.svg'])
         .pipe(imagemin({verbose: true})) // Сжимаем изображения
+        .pipe(gulp.dest('./dist/img'));
+    /* Отдельно переносим svg-спрайты без сжатия, т. к.
+     * они уже сжаты на этапе сборки и дополнительное
+     * сжатие может сломать собранный спрайт */
+    var buildSvg = gulp.src('./src/img/sprite*.svg')
         .pipe(gulp.dest('./dist/img'));
 });
 
