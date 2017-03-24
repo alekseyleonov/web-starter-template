@@ -1,0 +1,17 @@
+{
+  "extends": "standard",
+  "plugins": [
+        "standard",
+        "promise"
+    ],
+  "rules": {
+    "semi": ["warn", "always"],
+    "indent": ["warn", 4],
+    "no-multiple-empty-lines": ["warn", {"max": 2}],
+    "eqeqeq": ["error", "smart"],
+    "one-var": ["error", { "initialized": "always", "uninitialized": "never" }]
+  },
+  "globals": {
+    "Vue": true
+  }
+}

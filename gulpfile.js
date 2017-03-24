@@ -1,154 +1,188 @@
 var gulp = require('gulp'),
     sass = require('gulp-sass'),
-    browserSync = require('browser-sync'),
+    browserSync = require('browser-sync').create(),
+    htmlInjector = require('bs-html-injector'),
     csso = require('gulp-csso'),
     rename = require('gulp-rename'),
-    sourcemaps = require('gulp-sourcemaps'), // Sourcemaps для использования совместно с автопрефиксером
+    sourcemaps = require('gulp-sourcemaps'),
     autoprefixer = require('gulp-autoprefixer'),
-    del = require('del'), // Подключаем библиотеку для удаления файлов и папок
+    del = require('del'),
     spritesmith = require('gulp.spritesmith'),
     buffer = require('vinyl-buffer'),
     imagemin = require('gulp-imagemin'),
-    svgSprite    = require('gulp-svg-sprite'),
-    plumber      = require('gulp-plumber'),
+    svgSprite = require('gulp-svg-sprite'),
+    plumber = require('gulp-plumber'),
     merge = require('merge-stream'),
+    // babel = require('gulp-babel'),
+    // concat = require('gulp-concat'),
+    uncss = require('gulp-uncss'),
+    webpack = require('webpack-stream'),
 
-    /* Следующий блок переменных задает параметры директорий для gulp-svg-sprite */
-    baseDir      = 'app/img/icons-svg',   // <-- Set to your SVG base directory
-    svgGlob      = '**/*.svg',       // <-- Glob to match your SVG files
-    outDir       = 'app',     // <-- Main output directory
 
-    /* Конфигурация для gulp-svg-sprite */
-    config       = {
-        "log": "verbose", // Смотрим лог куда какие файлы упали
-        "mode": {
-            "css": { // Создаем CSS-спрайт
-                "dest": ".",
-                "common": "svg-icon", // Предпочтительная приставка для класса имени иконки
-                "sprite": "img/sprite.css.svg",
-                "bust": false,
-                "render": { // CSS отключен, используем SASS для сборки
-                    "scss": {
-                        "template": "app/tmpl/gulp-svg-sprite.scss",
-                        "dest": "scss/utils/_svg-sprite.scss"
+    baseDir = 'src/img/icons-svg',
+    svgGlob = '**/*.svg',
+    outDir = 'src',
+
+
+    config = {
+        'log': 'verbose',
+        'mode': {
+            'css': {
+                'dest': '.',
+                'common': 'svg-icon',
+                'sprite': 'img/sprite.css.svg',
+                'bust': false,
+                'render': {
+                    'scss': {
+                        'template': 'src/tmpl/gulp-svg-sprite.scss',
+                        'dest': 'scss/utils/_svg-sprite.scss'
                     }
                 },
-                "example": true
+                'example': true
             },
-            "stack": { // Создаем stack-спрайт (http://simurai.com/blog/2012/04/02/svg-stacks)
-                "dest": ".",
-                "sprite": "img/sprite.stack.svg",
-                "bust": false,
-                "example": true
+            'stack': {
+                'dest': '.',
+                'sprite': 'img/sprite.stack.svg',
+                'bust': false,
+                'example': true
             }
         }
     };
 
 
-// Таск для создания SVG-спрайта
-gulp.task('svgsprite', function() {
+
+gulp.task('svgsprite', function () {
     return gulp.src(svgGlob, {cwd: baseDir})
         .pipe(plumber())
-        .pipe(svgSprite(config)).on('error', function(error){ console.log(error); })
-        .pipe(gulp.dest(outDir))
+        .pipe(svgSprite(config)).on('error', function (error) {
+            console.log(error);
+        })
+        .pipe(gulp.dest(outDir));
 });
 
-// Таск для рендеринга SASS
+/* Тестирование стилей на предмет неиспользования в разметке */
+gulp.task('uncss', function () {
+    return gulp.src('./src/css/main.css')
+        .pipe(uncss({
+            html: ['./src/*.html'],
+            timeout: 5000,
+            report: true
+        }))
+        .pipe(gulp.dest('./test'));
+});
+
 gulp.task('sass', function () {
-    return gulp.src('./app/scss/**/*.scss')
-        .pipe(sourcemaps.init()) // Инициализируем sourcemaps
+    return gulp.src('./src/scss/**/*.scss')
+        .pipe(sourcemaps.init())
         .pipe(sass().on('error', sass.logError))
-        .pipe(autoprefixer(['last 3 versions', '> 2%', 'ie >= 8'], { cascade: true }))
+        .pipe(autoprefixer(['last 3 versions', '> 2%', 'ie >= 8'], {cascade: true}))
         .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest('./app/css'))
+        .pipe(gulp.dest('./src/css'))
         .pipe(browserSync.stream());
 });
 
-
-// Таск для минификации изображений (помимо него минификатор вызывается во время сборки спрайтов)
-gulp.task('imagemin', function () {
-    return gulp.src('./app/img/**')
-        .pipe(imagemin({verbose: true}))
-        .pipe(gulp.dest('./app/img/'))
+gulp.task('webpack', function () {
+    return gulp.src('./src/scripts/modules/*.js')
+        .pipe(webpack({
+            // watch: true,
+            context: __dirname + '/src/scripts/modules',
+            entry: {
+                mainApp: './mainApp.js'
+            },
+            output: {
+                filename: '[name].js'
+            },
+            module: {
+                loaders: [
+                    {
+                        test: /\.js$/,
+                        exclude: /node_modules/,
+                        loader: 'babel-loader'
+                    }
+                ]
+            },
+            devtool: 'source-map'
+        }))
+        .pipe(gulp.dest('./src/scripts/'))
+        .pipe(browserSync.stream());
 });
 
-// Задача для минификации css (запускается в build)
-gulp.task('csso', ['sass'], function() {
-    return gulp.src('./app/css/*.css') // Выбираем файл для минификации
+gulp.task('imagemin', function () {
+    return gulp.src('./src/img/**')
+        .pipe(imagemin({verbose: true}))
+        .pipe(gulp.dest('./src/img/'))
+});
+
+
+gulp.task('csso', ['sass'], function () {
+    return gulp.src('./src/css/*.css')
         .pipe(csso({
             restructure: true
-        })) // Сжимаем
-        // .pipe(rename({suffix: '.min'})) // Добавляем суффикс .min (опционально)
-        .pipe(gulp.dest('./app/css/min')); // Выгружаем в папку css
+        }))
+        // .pipe(rename({suffix: '.min'}))
+        .pipe(gulp.dest('./src/css/min'));
 });
 
 
 gulp.task('sprite', function () {
-    // Generate our spritesheet
-    var spriteData = gulp.src('./app/img/icons/*.png').pipe(spritesmith({
+    var spriteData = gulp.src('./src/img/icons/*.png').pipe(spritesmith({
         imgName: 'sprite.png',
         cssName: '_sprites.scss',
         imgPath: '../img/sprite.png'
     }));
 
-    // Pipe image stream through image optimizer and onto disk
     var imgStream = spriteData.img
-    // DEV: We must buffer our stream into a Buffer for `imagemin`
         .pipe(buffer())
         .pipe(imagemin())
-        .pipe(gulp.dest('./app/img/'));
+        .pipe(gulp.dest('./src/img/'));
 
-    // Pipe CSS stream through CSS optimizer and onto disk
     var cssStream = spriteData.css
-        .pipe(gulp.dest('./app/scss/utils'));
+        .pipe(gulp.dest('./src/scss/utils'));
 
-    // Return a merged stream to handle both `end` events
     return merge(imgStream, cssStream);
 });
 
 
-gulp.task('watch', ['sass'], function () {
-
-    browserSync.init({ // Выполняем browser Sync
-        server: { // Определяем параметры сервера
-            baseDir: './app' // Директория для сервера
+gulp.task('watch', ['sass', 'webpack'], function () {
+    browserSync.use(htmlInjector, {
+        files: './src/*.html'
+    });
+    browserSync.init({
+        server: {
+            baseDir: './src'
         },
-        notify: false // Отключаем уведомления
+        notify: false
     });
 
-    gulp.watch('app/scss/**/*.scss', ['sass']);
-    gulp.watch('./app/*.html').on('change', browserSync.reload); // Наблюдение за HTML файлами
-    // gulp.watch('./app/js/**/*.js', browserSync.reload); // Наблюдение за JS файлами в папке js
-    gulp.watch('./app/js/**/*.js').on('change', browserSync.reload);
-
+    gulp.watch('src/scss/**/*.scss', ['sass']);
+    gulp.watch('src/css/**/*.css', htmlInjector)/*.on('change', browserSync.reload)*/;
+    gulp.watch('./src/*.html', htmlInjector)/*.on('change', browserSync.reload)*/;
+    gulp.watch('./src/scripts/modules/*.js', ['webpack']).on('change', browserSync.reload);
 });
 
-
-gulp.task('clean', function() {
-    return del.sync('dist'); // Удаляем папку dist перед сборкой
+gulp.task('clean', function () {
+    return del.sync('dist');
 });
 
-
-gulp.task('build', ['clean', 'csso'], function() {
-    var buildCss = gulp.src([ // Переносим CSS стили в продакшен
-        './app/css/min/*.css'
+gulp.task('build', ['clean', 'csso'], function () {
+    var buildCss = gulp.src([
+        './src/css/min/*.css'
     ])
         .pipe(gulp.dest('./dist/css'));
-    var buildFonts = gulp.src('./app/fonts/**/*') // Переносим шрифты в продакшен
+    var buildFonts = gulp.src('./src/fonts/**/*')
         .pipe(gulp.dest('./dist/fonts'));
-    var buildJs = gulp.src('./app/js/**/*') // Переносим скрипты в продакшен
-        .pipe(gulp.dest('./dist/js'));
-    var buildHtml = gulp.src('./app/*.html') // Переносим HTML в продакшен
+    var buildJs = gulp.src(['./src/scripts/**/*', '!./src/scripts/vue.js']) // Исключаем vue.js для замены на production-версию
+        .pipe(gulp.dest('./dist/scripts'));
+    var buildJsVue = gulp.src('./src/scripts/vue.min.js') // Переименовывыем минифицированный файл соответсвия пути к нему в html
+        .pipe(rename('vue.js'))
+        .pipe(gulp.dest('./dist/scripts'));
+    var buildHtml = gulp.src('./src/*.html')
         .pipe(gulp.dest('./dist'));
-    /* Переносим все изображения КРОМЕ SVG-спрайтов в продакшен */
     var buildImg = gulp.src(['./src/img/**', '!./src/img/sprite.css.svg', '!./src/img/sprite.stack.svg'])
-        .pipe(imagemin({verbose: true})) // Сжимаем изображения
+        .pipe(imagemin({verbose: true}))
         .pipe(gulp.dest('./dist/img'));
-    /* Отдельно переносим svg-спрайты без сжатия, т. к.
-     * они уже сжаты на этапе сборки и дополнительное
-     * сжатие может сломать собранный спрайт */
     var buildSvg = gulp.src('./src/img/sprite*.svg')
         .pipe(gulp.dest('./dist/img'));
 });
 
-gulp.task('default', ['watch']); // Дефолтный таск
+gulp.task('default', ['watch']);
